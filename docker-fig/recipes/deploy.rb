@@ -42,9 +42,15 @@ directory "/srv/www/docker/current/app/" do
   action :create
 end
 
-link "/srv/www/docker/current/app/cross-platform" do
-    only_if { layer == 'docker_web'} 
-    to "/srv/www/web/current/"
+#link "/srv/www/docker/current/app/cross-platform" do
+#    only_if { layer == 'docker_web'} 
+#    to "/srv/www/web/current/"
+#end
+
+execute "mount-app-dir" do
+    only_if { layer == 'docker_web'}
+    cwd "/srv/www/docker/current/"
+    command "mkdir cross-platform; mount -o bind /srv/www/web/current cross-platform"
 end
 
 #execute "fig-build" do
