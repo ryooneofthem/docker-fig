@@ -61,10 +61,10 @@ end
 execute "fig-run-web" do
     only_if { layer == 'docker_web'} 
     cwd "/srv/www/docker/current/"
-    command "fig up web&"
+    command "fig up -d web"
 end
 execute "fig-run-db" do
     only_if { layer == 'docker_db'} 
     cwd "/srv/www/docker/current/"
-    command "fig up db&"
+    command "fig up -d db"
 end
