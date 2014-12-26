@@ -49,7 +49,7 @@ end
 
 execute "mount-app-dir" do
     only_if { layer == 'docker_web'}
-    cwd "/srv/www/docker/current/"
+    cwd "/srv/www/docker/current/app/"
     command "mkdir cross-platform; mount -o bind /srv/www/web/current cross-platform"
 end
 
