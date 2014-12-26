@@ -35,8 +35,8 @@ node[:deploy].each do |application, deploy|
 end
 
 directory "/srv/www/docker/current/app/" do
-  user deploy[:user]
-  group deploy[:group]
+  #user deploy[:user]
+  #group deploy[:group]
   mode '0755'
   action :create
 end
