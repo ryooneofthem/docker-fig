@@ -35,7 +35,7 @@ node[:deploy].each do |application, deploy|
 end
 
 directory "/srv/www/docker/current/app/" do
-  only_if { layer == 'web'} 
+  only_if { layer == 'docker_web'} 
   #user deploy[:user]
   #group deploy[:group]
   mode '0755'
@@ -43,7 +43,7 @@ directory "/srv/www/docker/current/app/" do
 end
 
 link "/srv/www/docker/current/app/cross-platform" do
-    only_if { layer == 'web'} 
+    only_if { layer == 'docker_web'} 
     to "/srv/www/web/current/"
 end
 
@@ -53,12 +53,12 @@ end
 #end
 
 execute "fig-run-web" do
-    only_if { layer == 'web'} 
+    only_if { layer == 'docker_web'} 
     cwd "/srv/www/docker/current/"
     command "fig up web -d"
 end
 execute "fig-run-db" do
-    only_if { layer == 'db'} 
+    only_if { layer == 'docker_db'} 
     cwd "/srv/www/docker/current/"
     command "fig up db -d"
 end
