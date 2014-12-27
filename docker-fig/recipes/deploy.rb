@@ -53,10 +53,23 @@ execute "mount-app-dir" do
     command "mkdir cross-platform; mount -o bind /srv/www/web/current cross-platform"
 end
 
-#execute "fig-build" do
-#    cwd "/srv/www/docker/current/"
-#    command "fig build"
-#end
+execute "fig-build-app" do
+    cwd "/srv/www/docker/current/"
+    only_if { layer == 'docker_web'} 
+    command "fig build app"
+end
+
+execute "fig-build-web" do
+    cwd "/srv/www/docker/current/"
+    only_if { layer == 'docker_web'} 
+    command "fig build web"
+end
+
+execute "fig-build-db" do
+    cwd "/srv/www/docker/current/"
+    only_if { layer == 'docker_db'} 
+    command "fig build db"
+end
 
 execute "fig-run-web" do
     only_if { layer == 'docker_web'} 
