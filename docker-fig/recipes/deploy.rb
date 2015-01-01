@@ -1,3 +1,5 @@
+include_recipe "docker-fig::create_env_file"
+
 aws_instance_id         = node[:opsworks][:instance][:aws_instance_id]
 layer                   = node[:opsworks][:instance][:layers].first
 hostname                = node[:opsworks][:instance][:hostname]
