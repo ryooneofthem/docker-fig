@@ -78,8 +78,22 @@ execute "fig-run-web" do
     cwd "/srv/www/docker/current/"
     command "fig up -d web"
 end
+
 execute "fig-run-db" do
     only_if { layer == 'docker_db'} 
     cwd "/srv/www/docker/current/"
     command "fig up -d db"
+end
+
+execute "pre-run-jmeter" do
+    only_if { layer == 'docker_jmeter'} 
+    environment => OpsWorks::Escape.escape_double_quotes(deploy[:environment_variables])
+    cwd "/srv/www/docker/current/"
+    command "dockerize -template /srv/www/docker/current/jmeter-senario1.jmx.tmpl:/srv/www/docker/current/jmeter-senario1.jmx echo"
+end
+
+execute "fig-run-jmeter" do
+    only_if { layer == 'docker_jmeter'} 
+    cwd "/srv/www/docker/current/"
+    command "fig up -d jmeter"
 end
