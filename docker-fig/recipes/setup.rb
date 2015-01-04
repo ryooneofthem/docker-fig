@@ -9,7 +9,8 @@ execute "dockerize-install" do
 end
 
 execute "unlimit-setup" do
-    command "ulimit -n 65536"
+    command "/usr/bin/ulimit -n 65536"
+    user "root"
     notifies :restart, 'service[docker]', :immediately
 end
 
