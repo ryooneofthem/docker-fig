@@ -64,15 +64,12 @@ end
 
 bash "unlimit-setup" do   
     code <<-EOC
-        ulimit -n 65535
+        ulimit -n 6553555555;
+        /etc/init.d/docker restart
     EOC
-    notifies :restart, 'service[docker]', :immediately
+    user root
 end
 
-service 'docker' do
-  supports :status => true, :restart => true, :reload => true
-  action [:start, :enable]
-end
 
 execute "fig-build-app" do
     cwd "/srv/www/docker/current/"
