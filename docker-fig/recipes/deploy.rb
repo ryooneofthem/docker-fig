@@ -62,6 +62,18 @@ execute "mount-app-dir" do
     command "mkdir cross-platform; mount -o bind /srv/www/web/current cross-platform"
 end
 
+bash "unlimit-setup" do   
+    code <<-EOC
+        ulimit -n 65535
+    EOC
+    notifies :restart, 'service[docker]', :immediately
+end
+
+service 'docker' do
+  supports :status => true, :restart => true, :reload => true
+  action [:start, :enable]
+end
+
 execute "fig-build-app" do
     cwd "/srv/www/docker/current/"
     only_if { layer == 'docker_web'} 
