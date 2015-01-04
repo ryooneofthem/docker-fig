@@ -62,14 +62,12 @@ execute "mount-app-dir" do
     command "mkdir cross-platform; mount -o bind /srv/www/web/current cross-platform"
 end
 
-bash "unlimit-setup" do   
-    code <<-EOC
-        ulimit -n 6553555555;
-        /etc/init.d/docker restart
-    EOC
-    user root
-end
-
+#bash "unlimit-setup" do   
+#    code <<-EOC
+#        ulimit -n 65535;
+#        /etc/init.d/docker restart
+#    EOC
+#end
 
 execute "fig-build-app" do
     cwd "/srv/www/docker/current/"
