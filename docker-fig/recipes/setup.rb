@@ -7,3 +7,7 @@ execute "dockerize-install" do
     not_if { ::File.exists?("/usr/local/bin/dockerize")}
     command "curl -L https://github.com/jwilder/dockerize/releases/download/v0.0.1/dockerize-linux-amd64-v0.0.1.tar.gz | tar xz -C /usr/local/bin"
 end
+
+execute "restart-autofs" do
+    command "service autofs restart"
+end
