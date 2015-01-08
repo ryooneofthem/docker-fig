@@ -43,7 +43,15 @@ node[:deploy].each do |application, deploy|
 
 end
 
-directory "/srv/www/docker/current/app/" do
+fig_origin_dir = '/srv/www/docker/current'
+fig_work_dir = '/tmp/docker'
+
+execute "init-docker-fig-dir" do
+    cwd "#{fig_origin_dir}"
+    command "mkdir -p #{fig_work_dir}; cp -a #{fig_origin_dir}/* #{fig_work_dir}/"
+end
+
+directory "#{fig_work_dir}/app/" do
   only_if { layer == 'docker_web'} 
   #user deploy[:user]
   #group deploy[:group]
@@ -51,56 +59,44 @@ directory "/srv/www/docker/current/app/" do
   action :create
 end
 
-#link "/srv/www/docker/current/app/cross-platform" do
-#    only_if { layer == 'docker_web'} 
-#    to "/srv/www/web/current/"
-#end
-
 execute "mount-app-dir" do
     only_if { layer == 'docker_web'}
-    cwd "/srv/www/docker/current/app/"
+    cwd "#{fig_work_dir}/app/"
     command "mkdir cross-platform; cp -a /srv/www/web/current/* cross-platform/"
 end
 
-#bash "unlimit-setup" do   
-#    code <<-EOC
-#        ulimit -n 65535;
-#        /etc/init.d/docker restart
-#    EOC
-#end
-
 execute "fig-build-app" do
-    cwd "/srv/www/docker/current/"
+    cwd "#{fig_work_dir}"
     only_if { layer == 'docker_web'} 
     command "fig build app"
 end
 
 execute "fig-build-web" do
-    cwd "/srv/www/docker/current/"
+    cwd "#{fig_work_dir}"
     only_if { layer == 'docker_web'} 
     command "fig build web"
 end
 
 execute "fig-build-db" do
-    cwd "/srv/www/docker/current/"
+    cwd "#{fig_work_dir}"
     only_if { layer == 'docker_db'} 
     command "fig build db"
 end
 
 execute "fig-run-web" do
     only_if { layer == 'docker_web'} 
-    cwd "/srv/www/docker/current/"
+    cwd "#{fig_work_dir}"
     command "fig up -d web"
 end
 
 execute "fig-run-db" do
     only_if { layer == 'docker_db'} 
-    cwd "/srv/www/docker/current/"
+    cwd "#{fig_work_dir}"
     command "fig up -d db"
 end
 
 execute "fig-run-jmeter" do
     only_if { layer == 'docker_jmeter'} 
-    cwd "/srv/www/docker/current/"
+    cwd "#{fig_work_dir}"
     command "fig up -d jmeter"
 end
