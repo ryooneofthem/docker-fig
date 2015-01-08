@@ -59,7 +59,7 @@ end
 execute "mount-app-dir" do
     only_if { layer == 'docker_web'}
     cwd "/srv/www/docker/current/app/"
-    command "mkdir cross-platform; cp -a /srv/www/web/current/* cross-platform/*"
+    command "mkdir cross-platform; cp -a /srv/www/web/current/* cross-platform/"
 end
 
 #bash "unlimit-setup" do   
