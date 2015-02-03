@@ -44,7 +44,7 @@ node[:deploy].each do |application, deploy|
 end
 
 fig_origin_dir = '/srv/www/docker/current'
-fig_work_dir = '/tmp/docker'
+fig_work_dir = '/root/docker'
 
 execute "init-docker-fig-dir" do
     cwd "#{fig_origin_dir}"
@@ -86,7 +86,7 @@ end
 execute "fig-run-web" do
     only_if { layer == 'docker_web'} 
     cwd "#{fig_work_dir}"
-    command "fig up -d web"
+    command "fig up -d app web"
 end
 
 execute "fig-run-db" do
