@@ -59,6 +59,16 @@ directory "#{fig_work_dir}/app/" do
   action :create
 end
 
+execute "fig-build-fluentd" do
+    cwd "#{fig_work_dir}"
+    command "fig build fluentd"
+end
+
+execute "fig-run-fluentd" do
+    cwd "#{fig_work_dir}"
+    command "fig up -d logspout"
+end
+
 execute "mount-app-dir" do
     only_if { layer == 'docker_web'}
     cwd "#{fig_work_dir}/app/"
