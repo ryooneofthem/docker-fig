@@ -1,5 +1,3 @@
-include_recipe "docker-fig::create_env_file"
-
 aws_instance_id         = node[:opsworks][:instance][:aws_instance_id]
 layer                   = node[:opsworks][:instance][:layers].first
 hostname                = node[:opsworks][:instance][:hostname]
@@ -42,6 +40,8 @@ node[:deploy].each do |application, deploy|
   end
 
 end
+
+include_recipe "docker-fig::create_env_file"
 
 fig_origin_dir = '/srv/www/docker/current'
 fig_work_dir = '/root/docker'
