@@ -31,12 +31,20 @@ node[:deploy].each do |application, deploy|
   #  only_if { deploy[:environment_variables][:layer] == 'web'} 
   #  to "#{deploy[:deploy_to]}/current/"
   #end
-  execute "pre-run-jmeter" do
-    only_if { layer == 'docker_jmeter' } 
-    cwd "/srv/www/docker/current/"
-    command "dockerize -template #{deploy[:deploy_to]}/current/jmeter/jmeter-senario1.jmx.tmpl:#{deploy[:deploy_to]}/current/jmeter/jmeter-senario1.jmx bash"
+  
+  #execute "pre-run-jmeter" do
+  #  only_if { layer == 'docker_jmeter' } 
+  #  cwd "/srv/www/docker/current/"
+  #  command "dockerize -template #{deploy[:deploy_to]}/current/jmeter/jmeter-senario1.jmx.tmpl:#{deploy[:deploy_to]}/current/jmeter/jmeter-senario1.jmx bash"
+  #  environment OpsWorks::Escape.escape_double_quotes(deploy[:environment_variables])
+  #  returns 2
+  #end
+  
+  execute "pre-run-fig" do
+    only_if { deploy[:environment_variables][:layer] == 'docker'} 
+    cwd "#{deploy[:deploy_to]}/current/"
+    command "cp fig.yml fig.yml.tmpl && docker-gen -only-published fig.yml.tmpl fig.yml" 
     environment OpsWorks::Escape.escape_double_quotes(deploy[:environment_variables])
-    returns 2
   end
 
 end
