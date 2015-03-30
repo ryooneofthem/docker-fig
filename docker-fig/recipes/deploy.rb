@@ -48,7 +48,7 @@ node[:deploy].each do |application, deploy|
   end
  
   file = deploy[:environment_variables][:file]
-  s3_file "/root/#{file}" do
+  aws_s3_file "/root/#{file}" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
     remote_path "/images/#{file}"
     bucket "#{deploy[:environment_variables][:AWS_S3_BUCKET]}"
@@ -57,7 +57,7 @@ node[:deploy].each do |application, deploy|
     mode "0644"
     action :create
   end
-  
+
   execute "load app image" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
     cwd "/root/"
