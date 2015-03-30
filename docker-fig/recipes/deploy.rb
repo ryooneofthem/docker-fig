@@ -48,14 +48,19 @@ node[:deploy].each do |application, deploy|
   end
  
   file = deploy[:environment_variables][:file]
-  aws_s3_file "/root/#{file}" do
+  #aws_s3_file "/root/#{file}" do
+  #  only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
+  #  remote_path "/images/#{file}"
+  #  bucket "#{deploy[:environment_variables][:AWS_S3_BUCKET]}"
+  #  aws_access_key_id "#{deploy[:environment_variables][:AWS_KEY_ID]}"
+  #  aws_secret_access_key "#{deploy[:environment_variables][:AWS_SEC_KEY]}"
+  #  mode "0644"
+  #  action :create
+  #end
+  execute "download app image" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
-    remote_path "/images/#{file}"
-    bucket "#{deploy[:environment_variables][:AWS_S3_BUCKET]}"
-    aws_access_key_id "#{deploy[:environment_variables][:AWS_KEY_ID]}"
-    aws_secret_access_key "#{deploy[:environment_variables][:AWS_SEC_KEY]}"
-    mode "0644"
-    action :create
+    cwd "/root/"
+    command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/#{file} ./#{file}"
   end
 
   execute "load app image" do
