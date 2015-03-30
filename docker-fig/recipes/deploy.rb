@@ -55,7 +55,7 @@ node[:deploy].each do |application, deploy|
     aws_access_key_id "#{deploy[:environment_variables][:AWS_KEY_ID]}"
     aws_secret_access_key "#{deploy[:environment_variables][:AWS_SEC_KEY]}"
     mode "0644"
-    action :create_if_missing
+    action :create
   end
   
   execute "load app image" do
