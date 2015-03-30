@@ -57,6 +57,12 @@ node[:deploy].each do |application, deploy|
   #  mode "0644"
   #  action :create
   #end
+  execute "init s3 config" do
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
+    cwd "/root/"
+    command "echo '[default]' > '.s3cfg' && echo 'access_key=#{deploy[:environment_variables][:AWS_KEY_ID]}' >> '.s3cfg' && echo 'secret_key=#{deploy[:environment_variables][:AWS_SEC_KEY]}' >> 's3cfg'"
+  end
+
   execute "download app image" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
     cwd "/root/"
