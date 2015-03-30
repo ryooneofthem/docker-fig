@@ -46,7 +46,23 @@ node[:deploy].each do |application, deploy|
     command "cp fig.yml fig.yml.tmpl && docker-gen -only-published fig.yml.tmpl fig.yml" 
     environment OpsWorks::Escape.escape_double_quotes(deploy[:environment_variables])
   end
-
+ 
+  file = deploy[:environment_variables][:file]
+  s3_file "/root/#{file}" do
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
+    remote_path "/images/#{file}"
+    bucket "#{deploy[:environment_variables][:AWS_S3_BUCKET]}"
+    aws_access_key_id "#{deploy[:environment_variables][:AWS_KEY_ID]}"
+    aws_secret_access_key "#{deploy[:environment_variables][:AWS_SEC_KEY]}"
+    mode "0644"
+    action :create_if_missing
+  end
+  
+  execute "load app image" do
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
+    cwd "/root/"
+    command "gunzip -c #{file} | docker load"
+  end
 end
 
 include_recipe "docker-fig::create_env_file"
@@ -67,39 +83,15 @@ directory "#{fig_work_dir}/app/" do
   action :create
 end
 
-execute "fig-build-fluentd" do
-    cwd "#{fig_work_dir}"
-    command "fig build fluentd"
-end
+#execute "fig-build-fluentd" do
+#    cwd "#{fig_work_dir}"
+#    command "fig build fluentd"
+#end
 
-execute "fig-run-fluentd" do
-    cwd "#{fig_work_dir}"
-    command "fig up -d logspout"
-end
-
-execute "mount-app-dir" do
-    only_if { layer == 'docker_web'}
-    cwd "#{fig_work_dir}/app/"
-    command "mkdir cross-platform; cp -a /srv/www/web/current/* cross-platform/"
-end
-
-execute "fig-build-app" do
-    cwd "#{fig_work_dir}"
-    only_if { layer == 'docker_web'} 
-    command "fig build app"
-end
-
-execute "fig-build-web" do
-    cwd "#{fig_work_dir}"
-    only_if { layer == 'docker_web'} 
-    command "fig build web"
-end
-
-execute "fig-build-db" do
-    cwd "#{fig_work_dir}"
-    only_if { layer == 'docker_db'} 
-    command "fig build db"
-end
+#execute "fig-run-fluentd" do
+#    cwd "#{fig_work_dir}"
+#    command "fig up -d logspout"
+#end
 
 execute "fig-run-web" do
     only_if { layer == 'docker_web'} 
@@ -111,10 +103,4 @@ execute "fig-run-db" do
     only_if { layer == 'docker_db'} 
     cwd "#{fig_work_dir}"
     command "fig up -d db"
-end
-
-execute "fig-run-jmeter" do
-    only_if { layer == 'docker_jmeter'} 
-    cwd "#{fig_work_dir}"
-    command "fig up -d jmeter"
 end
