@@ -51,6 +51,7 @@ node[:deploy].each do |application, deploy|
   ruby_block "get current hash" do
     block do
       tmp_current_hash = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
+      puts "The last line is #{tmp_current_hash}"
     end
   end 
   
