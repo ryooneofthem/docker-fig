@@ -71,7 +71,7 @@ node[:deploy].each do |application, deploy|
   end
 
   execute "download app image" do
-    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer] and !tmp_current_hash.blank?} 
     cwd "/root/"
     command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/#{file} ./#{file} --continue"
   end
