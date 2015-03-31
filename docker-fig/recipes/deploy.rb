@@ -49,11 +49,11 @@ node[:deploy].each do |application, deploy|
 
   ruby_block "get current hash" do
     block do
-      node["tmp_current_hash"] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
+      deploy["tmp_current_hash"] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
     end
   end 
   
-  file = "#{node[:tmp_current_hash]}_app.tgz"
+  file = "#{deploy[:tmp_current_hash]}_app.tgz"
   #aws_s3_file "/root/#{file}" do
   #  only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
   #  remote_path "/images/#{file}"
