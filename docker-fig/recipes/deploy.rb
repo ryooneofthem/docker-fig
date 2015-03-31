@@ -47,9 +47,10 @@ node[:deploy].each do |application, deploy|
     environment OpsWorks::Escape.escape_double_quotes(deploy[:environment_variables])
   end
 
+  node.set["TMP_CURRENT_HASH"] = ""
   ruby_block "get current hash" do
     block do
-      node.set["TMP_CURRENT_HASH"] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
+      node.override["TMP_CURRENT_HASH"] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
       puts "The last line is #{node[:TMP_CURRENT_HASH]}"
     end
   end 
