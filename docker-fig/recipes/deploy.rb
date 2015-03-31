@@ -62,7 +62,8 @@ node[:deploy].each do |application, deploy|
   execute "init s3 config" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
     cwd "/root/"
-    command "echo '[default]' > '.s3cfg' && echo 'access_key=#{deploy[:environment_variables][:AWS_KEY_ID]}' >> '.s3cfg' && echo 'secret_key=#{deploy[:environment_variables][:AWS_SEC_KEY]}' >> '.s3cfg'"
+    command "echo '[default]' > '.s3cfg' && echo 'access_key=$AWS_KEY_ID' >> '.s3cfg' && echo 'secret_key=$AWS_SEC_KEY' >> '.s3cfg'"
+    environment OpsWorks::Escape.escape_double_quotes(deploy[:environment_variables])
   end
 
   execute "download app image" do
