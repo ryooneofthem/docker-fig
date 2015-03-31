@@ -67,7 +67,7 @@ node[:deploy].each do |application, deploy|
   end
 
   execute "download app image" do
-    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer] and !node[:TMP_CURRENT_HASH].blank?} 
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer] and !node[:TMP_CURRENT_HASH].empty?} 
     cwd "/root/"
     command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/$TMP_CURRENT_FILE ./$TMP_CURRENT_FILE --continue"
     environment "TMP_CURRENT_FILE" => "#{node[:TMP_CURRENT_FILE]}"
