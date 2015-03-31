@@ -57,6 +57,7 @@ node[:deploy].each do |application, deploy|
   end
   b.run_action(:create)
   
+  puts "My last line is #{node[:TMP_CURRENT_HASH]}"
   file = "#{node[:TMP_CURRENT_HASH]}_app.tgz"
   
   execute "init s3 config" do
