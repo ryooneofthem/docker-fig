@@ -47,6 +47,7 @@ node[:deploy].each do |application, deploy|
     environment OpsWorks::Escape.escape_double_quotes(deploy[:environment_variables])
   end
 
+  tmp_current_hash = nil
   ruby_block "get current hash" do
     block do
       tmp_current_hash = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
