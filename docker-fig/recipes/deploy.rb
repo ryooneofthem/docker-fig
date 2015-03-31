@@ -53,8 +53,9 @@ node[:deploy].each do |application, deploy|
       node.override["TMP_CURRENT_HASH"] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
       puts "The last line is #{node[:TMP_CURRENT_HASH]}"
     end
-  end 
-  
+  end
+
+  puts "My TMP_CURRENT_HASH is #{node[:TMP_CURRENT_HASH]}" 
   file = "#{node[:TMP_CURRENT_HASH]}_app.tgz"
   #aws_s3_file "/root/#{file}" do
   #  only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
