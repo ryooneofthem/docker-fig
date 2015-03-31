@@ -53,14 +53,11 @@ node[:deploy].each do |application, deploy|
     block do
       TMP_CURRENT_HASH = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
       node.override["TMP_CURRENT_HASH"] = TMP_CURRENT_HASH.strip 
-      node.override["TMP_CURRENT_FILE"] = "#{TMP_CURRENT_HASH}_app.tgz"
+      node.override["TMP_CURRENT_FILE"] = "#{node[:TMP_CURRENT_HASH]}_app.tgz"
       puts "The last line is #{node[:TMP_CURRENT_HASH]}"
     end
   end
   b.run_action(:create)
-  
-  puts "My last line is #{node[:TMP_CURRENT_HASH]}"
-  file = "#{node[:TMP_CURRENT_HASH]}_app.tgz"
   
   execute "init s3 config" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
