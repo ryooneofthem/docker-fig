@@ -49,12 +49,12 @@ node[:deploy].each do |application, deploy|
 
   ruby_block "get current hash" do
     block do
-      ENV['TMP_CURRENT_HASH'] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
-      puts "The last line is ENV['TMP_CURRENT_HASH']"
+      node.set["TMP_CURRENT_HASH"] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
+      puts "The last line is #{node[:TMP_CURRENT_HASH]}"
     end
   end 
   
-  file = "#{ENV['TMP_CURRENT_HASH']}_app.tgz"
+  file = "#{node[:TMP_CURRENT_HASH]}_app.tgz"
   #aws_s3_file "/root/#{file}" do
   #  only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
   #  remote_path "/images/#{file}"
@@ -71,7 +71,7 @@ node[:deploy].each do |application, deploy|
   end
 
   execute "download app image" do
-    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer] and !ENV['TMP_CURRENT_HASH'].blank?} 
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer] and !node[:TMP_CURRENT_HASH].blank?} 
     cwd "/root/"
     command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/#{file} ./#{file} --continue"
   end
