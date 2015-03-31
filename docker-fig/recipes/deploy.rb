@@ -50,7 +50,8 @@ node[:deploy].each do |application, deploy|
   node.set["TMP_CURRENT_HASH"] = ""
   b = ruby_block "get current hash" do
     block do
-      node.override["TMP_CURRENT_HASH"] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
+      TMP_CURRENT_HASH = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
+      node.override["TMP_CURRENT_HASH"] = TMP_CURRENT_HASH.strip 
       puts "The last line is #{node[:TMP_CURRENT_HASH]}"
     end
   end
