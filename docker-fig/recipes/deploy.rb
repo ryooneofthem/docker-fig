@@ -48,10 +48,12 @@ node[:deploy].each do |application, deploy|
   end
 
   node.set["TMP_CURRENT_HASH"] = ""
+  node.set["TMP_CURRENT_FILE"] = ""
   b = ruby_block "get current hash" do
     block do
       TMP_CURRENT_HASH = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
       node.override["TMP_CURRENT_HASH"] = TMP_CURRENT_HASH.strip 
+      node.override["TMP_CURRENT_FILE"] = "#{TMP_CURRENT_HASH}_app.tgz"
       puts "The last line is #{node[:TMP_CURRENT_HASH]}"
     end
   end
@@ -69,13 +71,15 @@ node[:deploy].each do |application, deploy|
   execute "download app image" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer] and !node[:TMP_CURRENT_HASH].blank?} 
     cwd "/root/"
-    command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/#{file} ./#{file} --continue"
+    command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/#{ENV[:TMP_CURRENT_FILE]} ./#{ENV[:TMP_CURRENT_FILE]} --continue"
+    environment "TMP_CURRENT_FILE" => "#{node[:TMP_CURRENT_FILE]}"
   end
 
   execute "load app image" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
     cwd "/root/"
-    command "gunzip -c #{file} | docker load"
+    command "gunzip -c #{ENV[:TMP_CURRENT_FILE]} | docker load"
+    environment "TMP_CURRENT_FILE" => "#{node[:TMP_CURRENT_FILE]}"
   end
 end
 
