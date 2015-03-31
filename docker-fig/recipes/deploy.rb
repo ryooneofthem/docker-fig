@@ -48,28 +48,40 @@ node[:deploy].each do |application, deploy|
   end
 
   node.set["TMP_CURRENT_HASH"] = ""
-  ruby_block "get current hash" do
+  b = ruby_block "get current hash" do
     block do
       node.override["TMP_CURRENT_HASH"] = `cd #{deploy[:deploy_to]}/current/ && git rev-parse HEAD`
       puts "The last line is #{node[:TMP_CURRENT_HASH]}"
-      file = "#{node[:TMP_CURRENT_HASH]}_app.tgz"
-      execute "init s3 config" do
-          only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
-          cwd "/root/"
-          command "echo '[default]' > '.s3cfg' && echo 'access_key=#{deploy[:environment_variables][:AWS_KEY_ID]}' >> '.s3cfg' && echo 'secret_key=#{deploy[:environment_variables][:AWS_SEC_KEY]}' >> '.s3cfg'"
-      end
-      execute "download app image" do
-          only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer] and !node[:TMP_CURRENT_HASH].blank?} 
-          cwd "/root/"
-          command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/#{file} ./#{file} --continue"
-      end
-
-      execute "load app image" do
-          only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
-          cwd "/root/"
-          command "gunzip -c #{file} | docker load"
-      end
     end
+  end
+  b.run_action(:create)
+  puts "My TMP_CURRENT_HASH is #{node[:TMP_CURRENT_HASH]}" 
+  file = "#{node[:TMP_CURRENT_HASH]}_app.tgz"
+  #aws_s3_file "/root/#{file}" do
+  #  only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
+  #  remote_path "/images/#{file}"
+  #  bucket "#{deploy[:environment_variables][:AWS_S3_BUCKET]}"
+  #  aws_access_key_id "#{deploy[:environment_variables][:AWS_KEY_ID]}"
+  #  aws_secret_access_key "#{deploy[:environment_variables][:AWS_SEC_KEY]}"
+  #  mode "0644"
+  #  action :create
+  #end
+  execute "init s3 config" do
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
+    cwd "/root/"
+    command "echo '[default]' > '.s3cfg' && echo 'access_key=#{deploy[:environment_variables][:AWS_KEY_ID]}' >> '.s3cfg' && echo 'secret_key=#{deploy[:environment_variables][:AWS_SEC_KEY]}' >> '.s3cfg'"
+  end
+
+  execute "download app image" do
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer] and !node[:TMP_CURRENT_HASH].blank?} 
+    cwd "/root/"
+    command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/#{file} ./#{file} --continue"
+  end
+
+  execute "load app image" do
+    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
+    cwd "/root/"
+    command "gunzip -c #{file} | docker load"
   end
 end
 
