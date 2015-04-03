@@ -116,6 +116,8 @@ execute "fig-run-web" do
     only_if { layer == 'docker_web'} 
     cwd "#{fig_work_dir}"
     command "fig up -d app web"
+    action :nothing
+    subscribes :run, "execute[load app image]"
 end
 
 execute "fig-run-db" do
