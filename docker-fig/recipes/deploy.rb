@@ -56,7 +56,7 @@ node[:deploy].each do |application, deploy|
       puts "The last line is #{ENV['TMP_CURRENT_HASH']}"
       puts "The last file is #{ENV['TMP_CURRENT_FILE']}"
     end
-    notifies :run, "execute[init s3 config]", :immediately
+    notifies :run, "execute[init s3 config]" 
   end
   
   execute "init s3 config" do
@@ -64,7 +64,7 @@ node[:deploy].each do |application, deploy|
     cwd "/root/"
     command "echo '[default]' > .s3cfg && echo access_key=$AWS_KEY_ID >> .s3cfg && echo secret_key=$AWS_SEC_KEY >> .s3cfg"
     environment OpsWorks::Escape.escape_double_quotes(deploy[:environment_variables])
-    notifies :run, "execute[download app image]", :immediately
+    notifies :run, "execute[download app image]"
   end
 
   execute "download app image" do
@@ -73,7 +73,7 @@ node[:deploy].each do |application, deploy|
     command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/$TMP_CURRENT_FILE ./$TMP_CURRENT_FILE --force"
     #icommand 'echo "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/$TMP_CURRENT_FILE ./$TMP_CURRENT_FILE --continue" > /tmp/xxx'
     action :nothing
-    notifies :run, "execute[load app image]", :immediately
+    notifies :run, "execute[load app image]"
   end
 
   execute "load app image" do
@@ -84,3 +84,42 @@ node[:deploy].each do |application, deploy|
   end
 end
 
+include_recipe "docker-fig::create_env_file"
+
+fig_origin_dir = '/srv/www/docker/current'
+fig_work_dir = '/root/docker'
+
+execute "init-docker-fig-dir" do
+    cwd "#{fig_origin_dir}"
+    command "mkdir -p #{fig_work_dir}; cp -a #{fig_origin_dir}/* #{fig_work_dir}/"
+end
+
+directory "#{fig_work_dir}/app/" do
+  only_if { layer == 'docker_web'} 
+  #user deploy[:user]
+  #group deploy[:group]
+  mode '0755'
+  action :create
+end
+
+#execute "fig-build-fluentd" do
+#    cwd "#{fig_work_dir}"
+#    command "fig build fluentd"
+#end
+
+#execute "fig-run-fluentd" do
+#    cwd "#{fig_work_dir}"
+#    command "fig up -d logspout"
+#end
+
+execute "fig-run-web" do
+    only_if { layer == 'docker_web'} 
+    cwd "#{fig_work_dir}"
+    command "fig up -d app web"
+end
+
+execute "fig-run-db" do
+    only_if { layer == 'docker_db'} 
+    cwd "#{fig_work_dir}"
+    command "fig up -d db"
+end
