@@ -4,3 +4,4 @@ cookbook "docker", github: "otaki-ryuta/chef-docker"
 cookbook 'ntp'
 #cookbook 's3cmd'
 cookbook "s3cmd", github: "freerobby/s3cmd"
+cookbook "dnsmasq", github: "hw-cookbooks/dnsmasq" 
