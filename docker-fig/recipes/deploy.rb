@@ -83,12 +83,20 @@ node[:deploy].each do |application, deploy|
     command "gunzip -c $TMP_CURRENT_FILE | docker load || true"
     action :nothing
     notifies :run, "execute[build app image]"
+    notifies :run, "execute[check app image]"
   end
 
   execute "build app image" do
     not_if "docker images |grep local/app"
     cwd "#{deploy[:deploy_to]}/current/"
     command "docker build -t local/app ."
+    action :nothing
+  end
+  
+  execute "check app image" do
+    only_if "docker images |grep local/app"
+    cwd "#{deploy[:deploy_to]}/current/"
+    command "docker images |grep local/app"
     action :nothing
   end
 
@@ -128,6 +136,7 @@ execute "fig-run-web" do
     command "fig up -d app web"
     action :nothing
     subscribes :run, "execute[build app image]"
+    subscribes :run, "execute[check app image]"
 end
 
 execute "fig-run-db" do
