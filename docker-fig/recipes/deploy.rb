@@ -1,10 +1,12 @@
 aws_instance_id         = node[:opsworks][:instance][:aws_instance_id]
 layer                   = node[:opsworks][:instance][:layers].first
 hostname                = node[:opsworks][:instance][:hostname]
+private_ip              = node[:opsworks][:instance][:private_ip]
 instances               = node[:opsworks][:layers].fetch(layer)[:instances].sort_by{|k,v| v[:booted_at] }
 is_first_node           = instances.index{|i|i[0] == hostname} == 0
 
 Chef::Log.debug("aws_instance_id: #{aws_instance_id}")
+Chef::Log.debug("private_ip: #{private_ip}")
 Chef::Log.debug("layer: #{layer}")
 Chef::Log.debug("instances: #{instances.map{|i| i[0] }.join(', ')}")
 Chef::Log.debug("is_first_node: #{is_first_node}")
@@ -70,18 +72,26 @@ node[:deploy].each do |application, deploy|
   execute "download app image" do
     only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
     cwd "/root/"
-    command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/$TMP_CURRENT_FILE ./$TMP_CURRENT_FILE --force"
+    command "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/$TMP_CURRENT_FILE ./$TMP_CURRENT_FILE --force || true"
     #icommand 'echo "s3cmd get s3://#{deploy[:environment_variables][:AWS_S3_BUCKET]}/images/$TMP_CURRENT_FILE ./$TMP_CURRENT_FILE --continue" > /tmp/xxx'
     action :nothing
     notifies :run, "execute[load app image]"
   end
 
   execute "load app image" do
-    only_if { layer == 'docker_web' and layer == deploy[:environment_variables][:layer]} 
     cwd "/root/"
-    command "gunzip -c $TMP_CURRENT_FILE | docker load"
+    command "gunzip -c $TMP_CURRENT_FILE | docker load || true"
+    action :nothing
+    notifies :run, "execute[build app image]"
+  end
+
+  execute "build app image" do
+    not_if "docker images |grep local/app"
+    cwd "#{deploy[:deploy_to]}/current/"
+    command "docker build -t local/app ."
     action :nothing
   end
+
 end
 
 include_recipe "docker-fig::create_env_file"
@@ -117,7 +127,7 @@ execute "fig-run-web" do
     cwd "#{fig_work_dir}"
     command "fig up -d app web"
     action :nothing
-    subscribes :run, "execute[load app image]"
+    subscribes :run, "execute[build app image]"
 end
 
 execute "fig-run-db" do
